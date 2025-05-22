@@ -55,6 +55,6 @@ if st.button("📄 PDF generieren") and survey_id:
                 # Jetzt als JSON parsen
                 data = json.loads(decoded_str)
                 # Übergib das Dictionary direkt an die Auswertung
-                pdf_bytes = generiere_auswertung_pdf({"responses": data})
+                pdf_bytes = generiere_auswertung_pdf({"responses": data["responses"]})
                 st.success("✅ PDF erfolgreich erstellt")
                 st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")

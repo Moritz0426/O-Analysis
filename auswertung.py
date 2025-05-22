@@ -25,11 +25,17 @@ def spalten_mit_code(df, code_liste):
     return [col for col in df.columns for code in code_liste if col.startswith(code)]
 
 def generiere_auswertung_pdf(data):
-    # data ist jetzt ein Dictionary, nicht mehr ein Pfad
     df = pd.DataFrame(data["responses"])
-    import streamlit as st
     st.write("Spalten im DataFrame:", df.columns.tolist())
-    df = df[df["submitdate. Datum Abgeschickt"].notnull()]
+
+    # Suche nach einer passenden submitdate-Spalte
+    submitdate_col = next(
+        (col for col in df.columns if "submitdate" in col.lower()), None
+    )
+    if submitdate_col is None:
+        st.warning("Keine Spalte mit 'submitdate' gefunden. Alle Daten werden verwendet.")
+    else:
+        df = df[df[submitdate_col].notnull()]
 
     altersklassen_code_WK1 = "G07Q01"
     altersklassen_code_WK2 = "G09Q01"
