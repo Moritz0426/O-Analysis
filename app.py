@@ -48,7 +48,12 @@ if st.button("📄 PDF generieren") and survey_id:
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
             else:
-                data = json.loads(export_data)
+                # Base64-Dekodierung
+                decoded_bytes = base64.b64decode(export_data)
+                decoded_str = decoded_bytes.decode("utf-8")
+
+                # Jetzt kannst du es als JSON parsen
+                data = json.loads(decoded_str)
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_json:
                     json.dump({"responses": data}, temp_json)
                     temp_json_path = temp_json.name
