@@ -30,7 +30,7 @@ def generiere_auswertung_pdf(json_path):
 
     df = pd.DataFrame(data["responses"])
     import streamlit as st
-    st.write("Spalten im DataFrame:", df.df.info)
+    st.write("Spalten im DataFrame:", df.info)
     df = df[df["submitdate. Datum Abgeschickt"].notnull()]
 
     altersklassen_code_WK1 = "G07Q01"
