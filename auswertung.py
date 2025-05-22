@@ -1,4 +1,4 @@
-
+import streamlit as st
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -29,6 +29,8 @@ def generiere_auswertung_pdf(json_path):
         data = json.load(f)
 
     df = pd.DataFrame(data["responses"])
+    import streamlit as st
+    st.write("Spalten im DataFrame:", df.columns.tolist())
     df = df[df["submitdate. Datum Abgeschickt"].notnull()]
 
     altersklassen_code_WK1 = "G07Q01"
