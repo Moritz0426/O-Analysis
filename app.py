@@ -41,6 +41,8 @@ if st.button("📄 PDF generieren") and survey_id:
                 "id": 2
             }
             r = requests.post(LS_URL, json=export_payload)
+            st.code(f"Export-Antwort (Status: {r.status_code}):\n{r.text[:1000]}")
+            st.json(r.json())  # zeigt strukturierte JSON-Antwort
             export_data = r.json().get("result")
 
             if not export_data:
