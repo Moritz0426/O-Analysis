@@ -29,6 +29,7 @@ def spalten_mit_code(df, code_liste):
 def generiere_auswertung_pdf(data):
     df = pd.DataFrame(data["responses"])
     st.write("Spalten im DataFrame:", df.columns.tolist())
+    st.write("DataFrame:", df.head(20))
 
     # Suche nach einer passenden submitdate-Spalte
     submitdate_col = next(
