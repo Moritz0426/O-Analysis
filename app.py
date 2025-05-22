@@ -27,6 +27,7 @@ if st.button("📄 PDF generieren") and survey_id:
             "id": 1
         }
         r = requests.post(LS_URL, json=session_payload)
+        st.code(f"HTTP-Status: {r.status_code}\nAntwort:\n{r.text[:1000]}")
         st.code(f"Status: {r.status_code}\nAntwort:\n{r.text[:500]}")
         session_key = r.json().get("result")
 
