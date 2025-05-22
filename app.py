@@ -28,6 +28,8 @@ if st.button("📄 PDF generieren") and survey_id:
         }
         r = requests.post(LS_URL, json=session_payload)
         session_key = r.json().get("result")
+        r = requests.post(LS_URL, json=session_payload)
+        st.code(f"Status: {r.status_code}\nAntwort:\n{r.text[:500]}")
 
         if not session_key:
             st.error("❌ Zugriff auf LimeSurvey fehlgeschlagen. Bitte Zugangsdaten prüfen.")
