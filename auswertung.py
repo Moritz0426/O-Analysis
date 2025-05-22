@@ -24,13 +24,11 @@ def remove_emojis(text):
 def spalten_mit_code(df, code_liste):
     return [col for col in df.columns for code in code_liste if col.startswith(code)]
 
-def generiere_auswertung_pdf(json_path):
-    with open(json_path, encoding="utf-8") as f:
-        data = json.load(f)
-
+def generiere_auswertung_pdf(data):
+    # data ist jetzt ein Dictionary, nicht mehr ein Pfad
     df = pd.DataFrame(data["responses"])
     import streamlit as st
-    st.write("Spalten im DataFrame:", df.df.columns.tolist())
+    st.write("Spalten im DataFrame:", df.columns.tolist())
     df = df[df["submitdate. Datum Abgeschickt"].notnull()]
 
     altersklassen_code_WK1 = "G07Q01"

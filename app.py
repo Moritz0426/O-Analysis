@@ -52,12 +52,9 @@ if st.button("📄 PDF generieren") and survey_id:
                 decoded_bytes = base64.b64decode(export_data)
                 decoded_str = decoded_bytes.decode("utf-8")
 
-                # Jetzt kannst du es als JSON parsen
+                # Jetzt als JSON parsen
                 data = json.loads(decoded_str)
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w", encoding="utf-8") as temp_json:
-                    json.dump({"responses": data}, temp_json)
-                    temp_json_path = temp_json.name
-
-                pdf_bytes = generiere_auswertung_pdf(temp_json_path)
+                # Übergib das Dictionary direkt an die Auswertung
+                pdf_bytes = generiere_auswertung_pdf({"responses": data})
                 st.success("✅ PDF erfolgreich erstellt")
                 st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")
