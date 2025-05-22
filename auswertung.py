@@ -52,7 +52,7 @@ def generiere_auswertung_pdf(data):
 
     kategorische_codes = ["G04Q01", "G04Q02", "G04Q03", "G04Q04", "G04Q05", "G01Q01", "G05Q01", "G05Q02"]
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+    with (tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf):
         pdf = PdfPages(temp_pdf.name)
 
         def add_titelseite(title):
@@ -117,14 +117,11 @@ def generiere_auswertung_pdf(data):
         kategorische_fragen = spalten_mit_code(df, kategorische_codes)
         for frage in kategorische_fragen:
             werte = df[frage].fillna("Keine Antwort")
-            kategorien = ["Ja", "Nein", "Keine Antwort"] if set(werte.unique()).issubset({"Ja", "Nein", "Keine Antwort"})                 else werte.value_counts().index.tolist()
+            kategorien = ["Ja", "Nein", "Keine Antwort"] if set(werte.unique()).issubset({"Ja", "Nein", "Keine Antwort"})  \
+                else werte.value_counts().index.tolist()
+
             plt.figure(figsize=(8, 4))
-            farben = ["#1f77b4" if k != "Keine Antwort" else "#aaaaaa" for k in kategorien]
-            plot = sns.countplot(y=werte, order=kategorien, palette=farben)
-            for p in plot.patches:
-                wert = int(p.get_width())
-                y = p.get_y() + p.get_height() / 2
-                plot.text(p.get_width() + 0.1, y, str(wert), va='center')
+            sns.countplot(y=werte, order=kategorien)
             plt.title(frage.split('. ', 1)[1] if '. ' in frage else frage)
             plt.xlabel("Anzahl")
             plt.ylabel("Antwort")
