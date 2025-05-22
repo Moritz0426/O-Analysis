@@ -1,5 +1,7 @@
 import streamlit as st
 import json
+from datetime import date
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -73,7 +75,11 @@ def generiere_auswertung_pdf(data):
         sns.barplot(data=bewertung_df, x="Durchschnitt", y="Frage")
         plt.xlabel("Durchschnitt")
         plt.title("Durchschnittliche Bewertungen")
-        plt.gca().invert_xaxis()
+        # Y-Achse korrekt herum (Note 1 oben)
+        ax = plt.gca()
+        ax.set_xlim(0, 5.5)
+        ax.set_xticks([5, 4, 3, 2, 1, 0])
+        ax.set_xticklabels(["5", "4", "3", "2", "1", "0"])
         plt.tight_layout()
         pdf.savefig()
         plt.close()
