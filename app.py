@@ -93,6 +93,7 @@ if st.button("Antworten mappen") and survey_id:
     # Beispiel: Antwortoptionen für G04Q01 anzeigen
     qid_g04q01 = next(q["qid"] for q in questions if q["title"] == "G04Q01")
     st.write("QID G04Q01:", qid_g04q01)
+    st.write(session_key)
 
     answers_payload = {
         "method": "list_answers",
