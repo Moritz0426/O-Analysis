@@ -27,6 +27,7 @@ def spalten_mit_code(df, code_liste):
     return [col for col in df.columns for code in code_liste if col.startswith(code)]
 
 def generiere_auswertung_pdf(data):
+    # data ist ein Dictionary mit "responses" als Liste
     df = pd.DataFrame(data["responses"])
     st.write("Spalten im DataFrame:", df.columns.tolist())
     st.write("DataFrame:", df.head(20))
