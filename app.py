@@ -98,7 +98,16 @@ if st.button("Antworten mappen") and survey_id:
         "id": 99
     }
     answers_response = requests.post(LS_URL, json=answers_payload)
-    st.write(answers_response.json().get("result", []))
+    if answers_response.status_code == 200:
+        try:
+            result = answers_response.json().get("result", [])
+            st.write("Antwortoptionen für G04Q01:", result)
+        except Exception as e:
+            st.error(f"Fehler beim Parsen der Antwort: {e}")
+            st.write("Antwort-Text:", answers_response.text)
+    else:
+        st.error(f"Fehler beim Abrufen der Antwortoptionen: Status {answers_response.status_code}")
+        st.write("Antwort-Text:", answers_response.text)
     if answers_response.status_code == 200:
         answers = answers_response.json().get("result", [])
         st.write("Antwortoptionen für G04Q01:", answers)
