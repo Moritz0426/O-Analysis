@@ -66,14 +66,15 @@ if st.button("📄 PDF generieren") and survey_id:
                 else:
                     # bereits fertige JSON-Struktur vom Server
                     data = export_data
-                if not isinstance(data, dict) or "responses" not in data:
-                    st.error("❌ Die Antwort enthält keine gültigen Umfragedaten.")
+                if isinstance(data, dict) and "responses" in data:
+                    payload = data
+                elif isinstance(data, list):
+                    payload = {"responses": data}
                 else:
-                    pdf_bytes = generiere_auswertung_pdf({"responses": data["responses"]})
-                    st.success("✅ PDF erfolgreich erstellt")
-                    st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")
+                    st.error("❌ Die Antwortstruktur konnte nicht interpretiert werden.")
+                    st.stop()
 
                 # Übergib das Dictionary direkt an die Auswertung
-                pdf_bytes = generiere_auswertung_pdf({"responses": data["responses"]})
+                pdf_bytes = generiere_auswertung_pdf(payload)
                 st.success("✅ PDF erfolgreich erstellt")
                 st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")
