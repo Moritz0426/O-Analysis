@@ -64,7 +64,7 @@ if st.button("📄 PDF generieren") and survey_id:
                 st.code(export_data)
                 decoded_bytes = base64.b64decode(export_data)
                 decoded_str = decoded_bytes.decode("utf-8-sig")
-                csv_reader = csv.Dictreader(io.StringIO(decoded_str), delimiter=';')  # ggf. anderes Trennzeichen
+                csv_reader = csv.DictReader(io.StringIO(decoded_str), delimiter=';')  # ggf. anderes Trennzeichen
                 data = list(csv_reader)
                 payload = {"responses": data}
 
