@@ -61,6 +61,7 @@ if st.button("Antworten mappen") and survey_id:
 
     # Antwortoptionen holen und mappen
     answer_map = {}
+    st.write(questions)
     for q in questions:
         if q["type"] in ("L", "M", "O", "P", "5", "A", "B"):
             answers_payload = {
@@ -78,6 +79,7 @@ if st.button("Antworten mappen") and survey_id:
                     answer_map[q["question"]] = code_ans_map
 
     # Antwortcodes ersetzen
+    st.write(answer_map)
     new_data = []
     for row in data:
         new_row = {}
