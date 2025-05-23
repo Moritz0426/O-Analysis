@@ -1,4 +1,6 @@
 import base64
+import csv
+import io
 import sys
 
 import streamlit as st
@@ -64,7 +66,8 @@ if st.button("📄 PDF generieren") and survey_id:
                     # klassischer base64-Export
                     decoded_bytes = base64.b64decode(export_data)
                     decoded_str = decoded_bytes.decode("utf-8-sig")
-                    data = json.loads(decoded_str)
+                    csv_reader = csv.reader(io.StringIO(decoded_str), delimiter=';')  # ggf. anderes Trennzeichen
+                    data = list(csv_reader)
                 else:
                     # bereits fertige JSON-Struktur vom Server
                     data = export_data
