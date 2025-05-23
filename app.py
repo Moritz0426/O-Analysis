@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+from auswertung import generiere_auswertung_pdf  # Import der Auswertungsfunktion
 
 st.set_page_config(page_title="LimeSurvey JSON-Import", layout="centered")
 st.title("LimeSurvey JSON-Export Auswertung")
@@ -10,17 +11,19 @@ if uploaded_file is not None:
     try:
         data = json.load(uploaded_file)
         st.success("Datei erfolgreich geladen!")
-        # Zeige die ersten Zeilen/Keys zur Kontrolle
         st.write("Schlüssel im JSON:", list(data.keys()))
-        # Hier kannst du wie bisher mit data["responses"] usw. weiterarbeiten
-        # Beispiel:
         if "responses" in data:
             st.write("Erste 5 Antworten:", data["responses"][:5])
+            # PDF generieren und Download anbieten
+            pdf_bytes = generiere_auswertung_pdf(data)
+            st.download_button(
+                "Auswertung als PDF herunterladen",
+                pdf_bytes,
+                file_name="auswertung.pdf",
+                mime="application/pdf"
+            )
         else:
             st.warning("Im JSON wurde kein 'responses'-Key gefunden.")
-        # Optional: Rufe deine Auswertungsfunktion auf
-        # pdf_bytes = generiere_auswertung_pdf(data)
-        # st.download_button("PDF herunterladen", pdf_bytes, file_name="auswertung.pdf")
     except Exception as e:
         st.error(f"Fehler beim Laden der Datei: {e}")
 else:
