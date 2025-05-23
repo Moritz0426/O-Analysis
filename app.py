@@ -80,7 +80,6 @@ if st.button("📄 PDF generieren") and survey_id:
                 # Antwortoptionen abfragen
                 answer_map = {}
                 for q in questions:
-                    q in questions:
                     answers_payload = {
                         "method": "list_answers",
                         "params": [session_key, survey_id, q["qid"]],
