@@ -61,11 +61,57 @@ if st.button("📄 PDF generieren") and survey_id:
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
             else:
-                st.code(export_data)
                 decoded_bytes = base64.b64decode(export_data)
                 decoded_str = decoded_bytes.decode("utf-8-sig")
-                csv_reader = csv.DictReader(io.StringIO(decoded_str), delimiter=';')  # ggf. anderes Trennzeichen
+                csv_reader = csv.DictReader(io.StringIO(decoded_str), delimiter=';')
                 data = list(csv_reader)
+
+                # Fragen abfragen
+                questions_payload = {
+                    "method": "list_questions",
+                    "params": [session_key, survey_id],
+                    "id": 2
+                }
+                questions_response = requests.post(LS_URL, json=questions_payload)
+                questions = questions_response.json().get("result", [])
+                code_to_text = {q["title"]: q["question"] for q in questions}
+                qid_to_code = {q["qid"]: q["title"] for q in questions}
+
+                # Antwortoptionen abfragen
+                answer_map = {}
+                for q in questions:
+                    answers_payload = {
+                        "method": "list_answers",
+                        "params": [session_key, survey_id, q["qid"]],
+                        "id": 3
+                    }
+                    answers_response = requests.post(LS_URL, json=answers_payload)
+                    answers = answers_response.json().get("result", [])
+                    code_ans_map = {a["code"]: a["answer"] for a in answers}
+                    if code_ans_map:
+                        answer_map[q["title"]] = code_ans_map
+
+                # Spaltennamen ersetzen: "G01Q01" -> "G01Q01. /Fragetext/"
+                new_fieldnames = []
+                for col in data[0].keys():
+                    code = col.split()[0]  # nimmt den Code vor evtl. ". "
+                    if code in code_to_text:
+                        new_fieldnames.append(f"{code}. /{code_to_text[code]}/")
+                    else:
+                        new_fieldnames.append(col)
+
+                # Antworten ersetzen
+                new_data = []
+                for row in data:
+                    new_row = {}
+                    for col, value in row.items():
+                        code = col.split()[0]
+                        new_col = f"{code}. /{code_to_text[code]}/" if code in code_to_text else col
+                        if code in answer_map and value in answer_map[code]:
+                            new_row[new_col] = answer_map[code][value]
+                        else:
+                            new_row[new_col] = value
+                    new_data.append(new_row)
                 payload = {"responses": data}
 
                 # Übergib das Dictionary direkt an die Auswertung
