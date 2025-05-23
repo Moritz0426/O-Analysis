@@ -98,6 +98,7 @@ if st.button("Antworten mappen") and survey_id:
         "id": 99
     }
     answers_response = requests.post(LS_URL, json=answers_payload)
+    st.write(answers_response.json().get("result", []))
     if answers_response.status_code == 200:
         answers = answers_response.json().get("result", [])
         st.write("Antwortoptionen für G04Q01:", answers)
