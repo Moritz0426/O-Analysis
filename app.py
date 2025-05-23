@@ -61,12 +61,13 @@ if st.button("📄 PDF generieren") and survey_id:
                     session_key,
                     int(survey_id),
                     "json",
+                    "de",
                     {
                         "completionstatus": "all",
                         "headertoken": False,
                         "headerlabel": True,
                         "responseType": "long",
-                        "lang": "de"  # <-- Automatisch ermittelter Sprachcode!
+                          # <-- Automatisch ermittelter Sprachcode!
                     }
                 ],
                 "id": 2
