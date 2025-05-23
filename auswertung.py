@@ -6,12 +6,15 @@ import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 import textwrap
 import re
+import tempfile
 
-# ----------------------------------
+# ----------------------------
 # Hilfsfunktionen
-# ----------------------------------
+# ----------------------------
 
 def parse_schulnote(value):
+    if pd.isna(value):
+        return None
     if isinstance(value, str):
         match = re.match(r"^\s*(\d)", value)
         if match:
@@ -22,7 +25,10 @@ def parse_schulnote(value):
         return None
 
 def remove_emojis(text):
-    return re.sub(r'[^\x00-\x7F]+', '', text)
+    return re.sub(r"[^\x00-\x7F]+", "", text)
+
+def spalten_mit_code(df, code_liste):
+    return [col for col in df.columns for code in code_liste if col.startswith(code)]
 
 def add_titelseite(title, pdf):
     fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
@@ -30,9 +36,6 @@ def add_titelseite(title, pdf):
     ax.text(0.5, 0.5, title, ha="center", va="center", fontsize=20)
     pdf.savefig()
     plt.close()
-
-def spalten_mit_code(df, code_liste):
-    return [col for col in df.columns for code in code_liste if col.startswith(code)]
 
 def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
     altersklasse_spalte = next((col for col in df.columns if col.startswith(altersklassen_code)), None)
@@ -61,10 +64,11 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             pdf.savefig()
             plt.close()
 
-def generiere_auswertung_pdf(data, pdf_path="umfrage_auswertung.pdf"):
-    # ----------------------------------
-    # KONFIGURATION
-    # ----------------------------------
+# ----------------------------
+# Hauptfunktion
+# ----------------------------
+
+def generiere_auswertung_pdf(data, pdf_path=None):
     altersklassen_code_WK1 = "G07Q01"
     altersklassen_code_WK2 = "G09Q01"
     numerische_codes = [
@@ -75,22 +79,25 @@ def generiere_auswertung_pdf(data, pdf_path="umfrage_auswertung.pdf"):
     gruppierte_fragen_WK2 = ["G09Q02", "G09Q03", "G09Q04", "G09Q05"]
     kategorische_codes = ["G04Q01", "G04Q02", "G04Q03", "G04Q04", "G04Q05", "G01Q01", "G05Q01", "G05Q02"]
 
-    # ----------------------------------
-    # JSON laden
-    # ----------------------------------
     df = pd.DataFrame(data["responses"])
-    df = df[df["submitdate. Datum Abgeschickt"].notnull()]
 
-    # ----------------------------------
-    # PDF vorbereiten
-    # ----------------------------------
+    # Nur abgeschickte Antworten
+    submit_col = next((c for c in df.columns if "submitdate" in c.lower()), None)
+    if submit_col:
+        df = df[df[submit_col].notna()]
+
+    if pdf_path is None:
+        tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        pdf_path = tmpfile.name
+
     pdf = PdfPages(pdf_path)
 
-    # Teil 1: Gesamtauswertung numerischer Fragen
+    # Teil 1: Numerische Gesamtauswertung
     add_titelseite("Gesamtauswertung numerischer Fragen", pdf)
     numerische_fragen = spalten_mit_code(df, numerische_codes)
     for col in numerische_fragen:
         df[col] = df[col].apply(parse_schulnote)
+
     mittelwerte = df[numerische_fragen].mean().sort_values()
     bewertung_df = pd.DataFrame({
         "Frage": [col.split('. ', 1)[1] if '. ' in col else col for col in mittelwerte.index],
@@ -108,20 +115,19 @@ def generiere_auswertung_pdf(data, pdf_path="umfrage_auswertung.pdf"):
     pdf.savefig()
     plt.close()
 
-    # Teil 2a: Gruppierte Auswertung WK1
+    # Teil 2: Gruppierte Auswertungen
     add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK1, gruppierte_fragen_WK1, pdf)
-    # Teil 2b: Gruppierte Auswertung WK2
     add_titelseite("Auswertung nach Altersklassen – WK2", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK2, gruppierte_fragen_WK2, pdf)
 
-    # Teil 3: Kategorische Fragen
+    # Teil 3: Kategorische Fragen (mit "Keine Antwort")
     add_titelseite("Auswertung kategorischer Fragen", pdf)
     kategorische_fragen = spalten_mit_code(df, kategorische_codes)
     for frage in kategorische_fragen:
-        werte = df[frage].fillna("Keine Antwort")
-        kategorien = ["Ja", "Nein", "Keine Antwort"] if set(werte.unique()).issubset({"Ja", "Nein", "Keine Antwort"}) \
-            else werte.value_counts().index.tolist()
+        werte = df[frage].astype(str).replace("", "Keine Antwort").fillna("Keine Antwort")
+        kategorien = werte.value_counts().index.tolist()
+
         plt.figure(figsize=(8, 4))
         sns.countplot(y=werte, order=kategorien)
         plt.title(frage.split('. ', 1)[1] if '. ' in frage else frage)
@@ -139,7 +145,8 @@ def generiere_auswertung_pdf(data, pdf_path="umfrage_auswertung.pdf"):
         antworten = [remove_emojis(a) for a in antworten if a]
         if len(antworten) == 0:
             continue
-        fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 Hochformat
+
+        fig, ax = plt.subplots(figsize=(8.27, 11.69))
         ax.axis("off")
         titel = frage.split('. ', 1)[1] if '. ' in frage else frage
         text = f"{titel}\n" + "-" * 80 + "\n\n"
@@ -149,6 +156,7 @@ def generiere_auswertung_pdf(data, pdf_path="umfrage_auswertung.pdf"):
         pdf.savefig()
         plt.close()
 
-    # PDF speichern
     pdf.close()
-    print(f"\n✅ PDF erfolgreich erstellt: {pdf_path}")
+
+    with open(pdf_path, "rb") as f:
+        return f.read()
