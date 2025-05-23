@@ -61,7 +61,7 @@ if st.button("📄 PDF generieren") and survey_id:
                     session_key,
                     int(survey_id),
                     "json",
-                    "de",
+                    "de-informal",
                     "long",
                                  ],
                 "id": 2
