@@ -12,6 +12,18 @@ def finde_frage_keys(spaltenname, questions):
             return [q["title"], q["question"]]
     return []
 
+
+# CSV-Daten analysieren
+def analysiere_csv(data):
+    # Zeige die Spaltennamen
+    st.write("Spaltennamen im CSV:", list(data[0].keys()) if data else "Keine Daten gefunden.")
+
+    # Zeige die ersten Zeilen der Daten
+    st.write("Erste Zeilen der CSV-Daten:")
+    for i, row in enumerate(data[:5]):  # Zeige die ersten 5 Zeilen
+        st.write(f"Zeile {i + 1}: {row}")
+
+
 st.set_page_config(page_title="LimeSurvey Short-Format Mapper", layout="centered")
 st.title("LimeSurvey Short-Format Antwort-Mapping")
 
@@ -49,6 +61,7 @@ if st.button("Antworten mappen") and survey_id:
     decoded_str = decoded_bytes.decode("utf-8-sig")
     csv_reader = csv.DictReader(io.StringIO(decoded_str), delimiter=';')
     data = list(csv_reader)
+    analysiere_csv(data)
 
     # Fragen holen
     questions_payload = {
