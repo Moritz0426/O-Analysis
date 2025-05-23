@@ -85,7 +85,7 @@ if st.button("📄 PDF generieren") and survey_id:
                     "id": 3
                 }
                 answers_response_pre = requests.post(LS_URL, json=answers_payload_pre)
-                st.code(answers_response_pre)
+                st.code(f"Antwort von list_answers (Pre): {answers_response_pre.text}")
                 for q in questions:
                     st.write(q["title"], q["qid"], q["question"])
                     answers_payload = {
