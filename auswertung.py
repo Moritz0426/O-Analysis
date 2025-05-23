@@ -93,7 +93,7 @@ def generiere_auswertung_pdf(data, pdf_path=None):
     pdf = PdfPages(pdf_path)
 
     # Teil 1: Numerische Gesamtauswertung
-    add_titelseite("Gesamtauswertung numerischer Fragen", pdf)
+    #add_titelseite("Gesamtauswertung numerischer Fragen", pdf)
     numerische_fragen = spalten_mit_code(df, numerische_codes)
     for col in numerische_fragen:
         df[col] = df[col].apply(parse_schulnote)
@@ -118,11 +118,11 @@ def generiere_auswertung_pdf(data, pdf_path=None):
     # Teil 2: Gruppierte Auswertungen
     add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK1, gruppierte_fragen_WK1, pdf)
-    add_titelseite("Auswertung nach Altersklassen – WK2", pdf)
+    #add_titelseite("Auswertung nach Altersklassen – WK2", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK2, gruppierte_fragen_WK2, pdf)
 
     # Teil 3: Kategorische Fragen (mit "Keine Antwort")
-    add_titelseite("Auswertung kategorischer Fragen", pdf)
+    #add_titelseite("Auswertung kategorischer Fragen", pdf)
     kategorische_fragen = spalten_mit_code(df, kategorische_codes)
     for frage in kategorische_fragen:
         werte = df[frage].astype(str).replace("", "Keine Antwort").fillna("Keine Antwort")
@@ -138,7 +138,7 @@ def generiere_auswertung_pdf(data, pdf_path=None):
         plt.close()
 
     # Teil 4: Freitextantworten
-    add_titelseite("Freitextantworten", pdf)
+    #add_titelseite("Freitextantworten", pdf)
     textfragen = [col for col in df.columns if "Anmerkungen" in col]
     for frage in textfragen:
         antworten = df[frage].dropna().astype(str).str.strip()
