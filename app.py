@@ -59,6 +59,7 @@ if st.button("📄 PDF generieren") and survey_id:
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
             else:
+                st.code(export_data)
                 if isinstance(export_data, str):
                     # klassischer base64-Export
                     decoded_bytes = base64.b64decode(export_data)
