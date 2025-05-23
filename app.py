@@ -47,7 +47,7 @@ if st.button("📄 PDF generieren") and survey_id:
         else:
             export_payload = {
                 "method": "export_responses",
-                "params": [session_key, survey_id, "csv", "de-informal", "full"],
+                "params": [session_key, survey_id, "csv", "de-informal", "long"],
                 "id": 1
             }
             try:
