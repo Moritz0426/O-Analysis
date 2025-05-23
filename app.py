@@ -31,10 +31,30 @@ if st.button("📄 PDF generieren") and survey_id:
         st.code(f"Status: {r.status_code}\nAntwort:\n{r.text[:500]}")
         session_key = r.json().get("result")
 
+        # Überprüfen, ob die Session erfolgreich erstellt wurde
 
         if not session_key:
             st.error("❌ Zugriff auf LimeSurvey fehlgeschlagen. Bitte Zugangsdaten prüfen.")
         else:
+            # Sprache automatisch abfragen
+            language_payload = {
+                "method": "get_survey_properties",
+                "params": [
+                    session_key,
+                    int(survey_id),
+                    ["language"]
+                ],
+                "id": 99
+            }
+            r_lang = requests.post(LS_URL, json=language_payload)
+            language_result = r_lang.json().get("result")
+            survey_language = language_result.get("language") if language_result else None
+
+            if not survey_language:
+                st.error("❌ Konnte die Sprache der Umfrage nicht ermitteln.")
+                st.stop()
+
+            st.info(f"📘 Verwendete Sprache: `{survey_language}`")
             export_payload = {
                 "method": "export_responses",
                 "params": [
@@ -46,7 +66,7 @@ if st.button("📄 PDF generieren") and survey_id:
                         "headertoken": False,
                         "headerlabel": True,
                         "responseType": "long",  # <--- DAS IST ENTSCHEIDEND
-                        "language": "de"
+                        "language": survey_language
                     }
                 ],
                 "id": 2
