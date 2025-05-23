@@ -68,7 +68,7 @@ if st.button("📄 PDF generieren") and survey_id:
                         "responseType": "long",
                           # <-- Automatisch ermittelter Sprachcode!
                     },
-                    "de"
+                    "de-informal"
                 ],
                 "id": 2
             }
