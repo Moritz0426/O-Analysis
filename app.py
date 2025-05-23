@@ -62,14 +62,8 @@ if st.button("📄 PDF generieren") and survey_id:
                     int(survey_id),
                     "json",
                     "de",
-                    {
-                        "completionstatus": "all",
-                        "headertoken": False,
-                        "headerlabel": True,
-                        "responseType": "long",
-                          # <-- Automatisch ermittelter Sprachcode!
-                    }
-                ],
+                    "long",
+                                 ],
                 "id": 2
             }
             r = requests.post(LS_URL, json=export_payload)
