@@ -77,7 +77,9 @@ if st.button("Antworten mappen") and survey_id:
                 answers = answers_response.json().get("result", [])
                 code_ans_map = {a["code"]: a["answer"] for a in answers}
                 if code_ans_map:
-                    answer_map[q["question"]] = code_ans_map
+                    # Mappe auf Fragetitel UND Fragetext
+                    answer_map[q["title"]] = code_ans_map
+                    answer_map[q["question"]] = code_ans_map  # optional, falls Fragetext als Spaltenname vorkommt
 
     st.write(answer_map)
     st.write(data[0])
