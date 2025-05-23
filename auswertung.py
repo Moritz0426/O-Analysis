@@ -45,7 +45,7 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             if not frage_spalte:
                 continue
 
-            df[frage_spalte] = df[frage_spalte].apply(parse_schulnote)
+            df[frage_spalte] = df[frage_spalte ].apply(parse_schulnote)
             gruppiert = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
 
             if gruppiert.empty:

@@ -11,9 +11,8 @@ if uploaded_file is not None:
     try:
         data = json.load(uploaded_file)
         st.success("Datei erfolgreich geladen!")
-        st.write("Schlüssel im JSON:", list(data.keys()))
         if "responses" in data:
-            st.write("Erste 5 Antworten:", data["responses"][:5])
+            st.write("PDF wird generiert...")
             # PDF generieren und Download anbieten
             pdf_bytes = generiere_auswertung_pdf(data)
             st.download_button(
