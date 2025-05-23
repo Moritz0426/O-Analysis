@@ -90,7 +90,17 @@ if st.button("Antworten mappen") and survey_id:
                     # Mappe auf Fragetitel UND Fragetext
                     answer_map[q["title"]] = code_ans_map
                     answer_map[q["question"]] = code_ans_map
-
+    # Beispiel: Antwortoptionen für G04Q01 anzeigen
+    qid_g04q01 = next(q["qid"] for q in questions if q["title"] == "G04Q01")
+    answers_payload = {
+        "method": "list_answers",
+        "params": [session_key, survey_id, int(qid_g04q01)],
+        "id": 99
+    }
+    answers_response = requests.post(LS_URL, json=answers_payload)
+    if answers_response.status_code == 200:
+        answers = answers_response.json().get("result", [])
+        st.write("Antwortoptionen für G04Q01:", answers)
     # Antwortcodes ersetzen
     st.write(answer_map)
     new_data = []
