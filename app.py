@@ -1,9 +1,14 @@
 import base64
+import sys
+
 import streamlit as st
 import requests
 import json
 import os
 import tempfile
+
+import urllib3
+
 from auswertung import generiere_auswertung_pdf
 
 st.set_page_config(page_title="LimeSurvey PDF-Auswerter", layout="centered")
@@ -36,46 +41,18 @@ if st.button("📄 PDF generieren") and survey_id:
         if not session_key:
             st.error("❌ Zugriff auf LimeSurvey fehlgeschlagen. Bitte Zugangsdaten prüfen.")
         else:
-            # Sprache automatisch abfragen
-            language_payload = {
-                "method": "get_survey_properties",
-                "params": [
-                    session_key,
-                    int(survey_id),
-                    ["language"]
-                ],
-                "id": 99
-            }
-            r_lang = requests.post(LS_URL, json=language_payload)
-            language_result = r_lang.json().get("result")
-            survey_language = language_result.get("language") if language_result else None
+            req = urllib3.Request(url =LS_URL, data= "{\"method\": \"export_responses\", \"params\": [\""+session_key+"\", "+survey_id+",\"csv\",\"de\",\"full\"], \"id\": 1}")
+            req.add_header("Content-Type", "application/json")
+            req.add_header("connection", "Keep-Alive")
+            export_data = json.get("result")
+            try:
+                f= urllib3.urlopen(req)
+                responses = f.read()
+                json = json.loads(responses)
+            except:
+                e = sys.exc_info()[0]
+                st.error(f"❌ Fehler beim Abrufen der Daten: {e}")
 
-            if not survey_language:
-                st.error("❌ Konnte die Sprache der Umfrage nicht ermitteln.")
-                st.stop()
-
-            st.info(f"📘 Verwendete Sprache: `{survey_language}`")
-            export_payload = {
-                "method": "export_responses",
-                "params": [
-                    session_key,
-                    int(survey_id),
-                    "json",
-                    {
-                        "completionstatus": "all",
-                        "headertoken": False,
-                        "headerlabel": True,
-                        "responseType": "long",
-                          # <-- Automatisch ermittelter Sprachcode!
-                    },
-                    "de-informal"
-                ],
-                "id": 2
-            }
-            r = requests.post(LS_URL, json=export_payload)
-            st.code(f"Export-Antwort (Status: {r.status_code}):\n{r.text[:1000]}")
-            st.json(r.json())  # zeigt strukturierte JSON-Antwort
-            export_data = r.json().get("result")
 
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
