@@ -58,12 +58,21 @@ if st.button("📄 PDF generieren") and survey_id:
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
             else:
-                # Base64-Dekodierung
-                decoded_bytes = base64.b64decode(export_data)
-                decoded_str = decoded_bytes.decode("utf-8")
+                if isinstance(export_data, str):
+                    # klassischer base64-Export
+                    decoded_bytes = base64.b64decode(export_data)
+                    decoded_str = decoded_bytes.decode("utf-8")
+                    data = json.loads(decoded_str)
+                else:
+                    # bereits fertige JSON-Struktur vom Server
+                    data = export_data
+                if not isinstance(data, dict) or "responses" not in data:
+                    st.error("❌ Die Antwort enthält keine gültigen Umfragedaten.")
+                else:
+                    pdf_bytes = generiere_auswertung_pdf({"responses": data["responses"]})
+                    st.success("✅ PDF erfolgreich erstellt")
+                    st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")
 
-                # Jetzt als JSON parsen
-                data = json.loads(decoded_str)
                 # Übergib das Dictionary direkt an die Auswertung
                 pdf_bytes = generiere_auswertung_pdf({"responses": data["responses"]})
                 st.success("✅ PDF erfolgreich erstellt")
