@@ -65,6 +65,7 @@ if st.button("Antworten mappen") and survey_id:
 
     # Antwortoptionen holen und mappen
     answer_map = {}
+    st.write(questions)
     for q in questions:
         if q["type"] in ("L", "M", "O", "P", "5", "A", "B"):
             answers_payload = {
