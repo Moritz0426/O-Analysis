@@ -66,9 +66,9 @@ if st.button("📄 PDF generieren") and survey_id:
                 decoded_str = decoded_bytes.decode("utf-8-sig")
                 csv_reader = csv.reader(io.StringIO(decoded_str), delimiter=';')  # ggf. anderes Trennzeichen
                 data = list(csv_reader)
-
+                payload = {"responses": data}
 
                 # Übergib das Dictionary direkt an die Auswertung
-                pdf_bytes = generiere_auswertung_pdf(data)
+                pdf_bytes = generiere_auswertung_pdf(payload)
                 st.success("✅ PDF erfolgreich erstellt")
                 st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name="auswertung.pdf")
