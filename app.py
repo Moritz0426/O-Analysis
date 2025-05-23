@@ -80,13 +80,22 @@ if st.button("📄 PDF generieren") and survey_id:
                 # Antwortoptionen abfragen
                 answer_map = {}
                 for q in questions:
+                    q in questions:
                     answers_payload = {
                         "method": "list_answers",
                         "params": [session_key, survey_id, q["qid"]],
                         "id": 3
                     }
                     answers_response = requests.post(LS_URL, json=answers_payload)
-                    answers = answers_response.json().get("result", [])
+                    if answers_response.status_code == 200 and answers_response.text.strip():
+                        try:
+                            answers = answers_response.json().get("result", [])
+                        except Exception as e:
+                            st.warning(f"Antworten für Frage {q['title']} konnten nicht geladen werden: {e}")
+                            answers = []
+                    else:
+                        st.warning(f"Keine Antwortdaten für Frage {q['title']} erhalten.")
+                        answers = []
                     code_ans_map = {a["code"]: a["answer"] for a in answers}
                     if code_ans_map:
                         answer_map[q["title"]] = code_ans_map
