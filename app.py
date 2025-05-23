@@ -45,7 +45,8 @@ if st.button("📄 PDF generieren") and survey_id:
                         "completionstatus": "all",
                         "headertoken": False,
                         "headerlabel": True,
-                        "responseType": "long"  # <--- DAS IST ENTSCHEIDEND
+                        "responseType": "long",  # <--- DAS IST ENTSCHEIDEND
+                         "language": "de"
                     }
                 ],
                 "id": 2
