@@ -86,6 +86,7 @@ if st.button("📄 PDF generieren") and survey_id:
                         "id": 3
                     }
                     answers_response = requests.post(LS_URL, json=answers_payload)
+                    st.write(f"Antwort von list_answers für {q['title']} (qid={q['qid']}):", answers_response.text)
                     if answers_response.status_code == 200 and answers_response.text.strip():
                         try:
                             answers = answers_response.json().get("result", [])
