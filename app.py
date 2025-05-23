@@ -81,7 +81,7 @@ if st.button("📄 PDF generieren") and survey_id:
                 answer_map = {}
                 awnsers_payload_pre = {
                     "method": "list_answers",
-                    "params": [session_key, survey_id, q["qid"]],
+                    "params": [session_key, survey_id],
                     "id": 3
                 }
                 answers_response_pre = requests.post(LS_URL, json=answers_payload_pre)
