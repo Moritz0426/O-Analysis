@@ -4,15 +4,14 @@ import io
 import requests
 import streamlit as st
 import os
-import re
 
-# Hilfsfunktion, um Fragetext auf LimeSurvey-Titel zu mappen
-def finde_frage_title(spaltenname, code_to_title):
-    for title, frage in code_to_title.items():
-        # Exakter Vergleich oder Teilstring-Suche
-        if frage == spaltenname or frage in spaltenname or spaltenname in frage:
-            return title
-    return None
+def finde_frage_keys(spaltenname, questions):
+    # Gibt alle möglichen Keys (title, question) für eine Spalte zurück
+    for q in questions:
+        if q["question"] == spaltenname or q["title"] == spaltenname or q["question"] in spaltenname:
+            return [q["title"], q["question"]]
+    return []
+
 st.set_page_config(page_title="LimeSurvey Short-Format Mapper", layout="centered")
 st.title("LimeSurvey Short-Format Antwort-Mapping")
 
@@ -59,13 +58,9 @@ if st.button("Antworten mappen") and survey_id:
     }
     questions_response = requests.post(LS_URL, json=questions_payload)
     questions = questions_response.json().get("result", [])
-    code_to_title = {q["title"]: q["question"] for q in questions}
-    title_to_qid = {q["question"]: q["qid"] for q in questions}
-    title_to_type = {q["question"]: q["type"] for q in questions}
 
     # Antwortoptionen holen und mappen
     answer_map = {}
-    st.write(questions)
     for q in questions:
         if q["type"] in ("L", "M", "O", "P", "5", "A", "B"):
             answers_payload = {
@@ -80,20 +75,21 @@ if st.button("Antworten mappen") and survey_id:
                 if code_ans_map:
                     # Mappe auf Fragetitel UND Fragetext
                     answer_map[q["title"]] = code_ans_map
-                    answer_map[q["question"]] = code_ans_map  # optional, falls Fragetext als Spaltenname vorkommt
+                    answer_map[q["question"]] = code_ans_map
 
-    st.write(answer_map)
-    st.write(data[0])
     # Antwortcodes ersetzen
     new_data = []
     for row in data:
         new_row = {}
         for col, value in row.items():
-            # Finde zugehörigen Fragetitel
-            title = finde_frage_title(col, code_to_title)
-            if title and title in answer_map and value in answer_map[title]:
-                new_row[col] = answer_map[title][value]
-            else:
+            frage_keys = finde_frage_keys(col, questions)
+            mapped = False
+            for key in frage_keys:
+                if key in answer_map and value in answer_map[key]:
+                    new_row[col] = answer_map[key][value]
+                    mapped = True
+                    break
+            if not mapped:
                 new_row[col] = value
         new_data.append(new_row)
 
