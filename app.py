@@ -37,7 +37,17 @@ if st.button("📄 PDF generieren") and survey_id:
         else:
             export_payload = {
                 "method": "export_responses",
-                "params": [session_key, int(survey_id), "json"],
+                "params": [
+                    session_key,
+                    int(survey_id),
+                    "json",
+                    {
+                        "completionstatus": "all",
+                        "headertoken": False,
+                        "headerlabel": True,
+                        "responseType": "long"  # <--- DAS IST ENTSCHEIDEND
+                    }
+                ],
                 "id": 2
             }
             r = requests.post(LS_URL, json=export_payload)
