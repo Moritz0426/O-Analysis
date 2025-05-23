@@ -7,6 +7,8 @@ import json
 import os
 import tempfile
 
+from urllib import request
+
 import urllib3
 
 from auswertung import generiere_auswertung_pdf
@@ -41,18 +43,18 @@ if st.button("📄 PDF generieren") and survey_id:
         if not session_key:
             st.error("❌ Zugriff auf LimeSurvey fehlgeschlagen. Bitte Zugangsdaten prüfen.")
         else:
-            req = urllib3.Request(url =LS_URL, data= "{\"method\": \"export_responses\", \"params\": [\""+session_key+"\", "+survey_id+",\"csv\",\"de\",\"full\"], \"id\": 1}")
-            req.add_header("Content-Type", "application/json")
-            req.add_header("connection", "Keep-Alive")
-            export_data = json.get("result")
+            export_payload = {
+                "method": "export_responses",
+                "params": [session_key, survey_id, "csv", "de", "full"],
+                "id": 1
+            }
             try:
-                f= urllib3.urlopen(req)
-                responses = f.read()
-                json = json.loads(responses)
-            except:
-                e = sys.exc_info()[0]
+                export_response = requests.post(LS_URL, json=export_payload)
+                export_json = export_response.json()
+                export_data = export_json.get("result")
+            except Exception as e:
                 st.error(f"❌ Fehler beim Abrufen der Daten: {e}")
-
+                st.stop()
 
             if not export_data:
                 st.error("❌ Keine Daten gefunden oder Export fehlgeschlagen.")
