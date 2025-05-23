@@ -79,6 +79,8 @@ if st.button("Antworten mappen") and survey_id:
                 if code_ans_map:
                     answer_map[q["question"]] = code_ans_map
 
+    st.write(answer_map)
+    st.write(data[0])
     # Antwortcodes ersetzen
     new_data = []
     for row in data:

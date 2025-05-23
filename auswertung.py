@@ -151,3 +151,4 @@ def generiere_auswertung_pdf(data):
         pdf.close()
         with open(temp_pdf.name, "rb") as f:
             return f.read()
+
