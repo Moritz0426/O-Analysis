@@ -4,7 +4,15 @@ import io
 import requests
 import streamlit as st
 import os
+import re
 
+# Hilfsfunktion, um Fragetext auf LimeSurvey-Titel zu mappen
+def finde_frage_title(spaltenname, code_to_title):
+    for title, frage in code_to_title.items():
+        # Exakter Vergleich oder Teilstring-Suche
+        if frage == spaltenname or frage in spaltenname or spaltenname in frage:
+            return title
+    return None
 st.set_page_config(page_title="LimeSurvey Short-Format Mapper", layout="centered")
 st.title("LimeSurvey Short-Format Antwort-Mapping")
 
@@ -76,8 +84,10 @@ if st.button("Antworten mappen") and survey_id:
     for row in data:
         new_row = {}
         for col, value in row.items():
-            if col in answer_map and value in answer_map[col]:
-                new_row[col] = answer_map[col][value]
+            # Finde zugehörigen Fragetitel
+            title = finde_frage_title(col, code_to_title)
+            if title and title in answer_map and value in answer_map[title]:
+                new_row[col] = answer_map[title][value]
             else:
                 new_row[col] = value
         new_data.append(new_row)
