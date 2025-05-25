@@ -68,7 +68,7 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
 # Hauptfunktion
 # ----------------------------
 
-def generiere_auswertung_pdf(data, pdf_path=None):
+def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
     altersklassen_code_WK1 = "G07Q01"
     altersklassen_code_WK2 = "G09Q01"
     numerische_codes = [
@@ -82,7 +82,11 @@ def generiere_auswertung_pdf(data, pdf_path=None):
     df = pd.DataFrame(data["responses"])
 
     # Nur abgeschickte Antworten
-    submit_col = next((c for c in df.columns if "submitdate" in c.lower()), None)
+    # Suche nach einer Spalte, die "submitdate" ODER "Datum Abgeschickt" enthält
+    submit_col = next(
+        (c for c in df.columns if "submitdate" in c.lower() or "datum abgeschickt" in c.lower()),
+        None
+    )
     if submit_col:
         df = df[df[submit_col].notna()]
 
@@ -99,21 +103,22 @@ def generiere_auswertung_pdf(data, pdf_path=None):
         df[col] = df[col].apply(parse_schulnote)
 
     mittelwerte = df[numerische_fragen].mean().sort_values()
-    bewertung_df = pd.DataFrame({
-        "Frage": [col.split('. ', 1)[1] if '. ' in col else col for col in mittelwerte.index],
-        "Durchschnitt": mittelwerte.values
-    })
-    plt.figure(figsize=(10, 0.6 * len(bewertung_df)))
-    sns.barplot(data=bewertung_df, x="Durchschnitt", y="Frage")
-    plt.xlabel("Durchschnitt")
-    plt.title("Durchschnittliche Bewertungen")
-    ax = plt.gca()
-    ax.set_xlim(0, 5.5)
-    ax.set_xticks([5, 4, 3, 2, 1, 0])
-    ax.set_xticklabels(["5", "4", "3", "2", "1", "0"])
-    plt.tight_layout()
-    pdf.savefig()
-    plt.close()
+    if not mittelwerte.empty:
+        bewertung_df = pd.DataFrame({
+            "Frage": [col.split('. ', 1)[1] if '. ' in col else col for col in mittelwerte.index],
+            "Durchschnitt": mittelwerte.values
+        })
+        plt.figure(figsize=(10, 0.6 * len(bewertung_df)))
+        sns.barplot(data=bewertung_df, x="Durchschnitt", y="Frage")
+        plt.xlabel("Durchschnitt")
+        plt.title("Durchschnittliche Bewertungen")
+        ax = plt.gca()
+        ax.set_xlim(0, 5.5)
+        ax.set_xticks([5, 4, 3, 2, 1, 0])
+        ax.set_xticklabels(["5", "4", "3", "2", "1", "0"])
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
 
     # Teil 2: Gruppierte Auswertungen
     add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
