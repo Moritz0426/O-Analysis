@@ -121,7 +121,7 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
         plt.close()
 
     # Teil 2: Gruppierte Auswertungen
-    add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
+    #add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK1, gruppierte_fragen_WK1, pdf)
     #add_titelseite("Auswertung nach Altersklassen – WK2", pdf)
     auswertung_pro_wettkampf(df, altersklassen_code_WK2, gruppierte_fragen_WK2, pdf)
