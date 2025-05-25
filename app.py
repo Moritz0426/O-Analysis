@@ -29,17 +29,22 @@ else:
         except Exception as e:
             st.error(f"❌ Fehler beim Parsen des JSON-Rohtexts: {e}")
 
+# PDF-Generierung und Download außerhalb des Formulars
+pdf_bytes = None
+filename = "auswertung.pdf"
+
 if data and "responses" in data:
     with st.form("pdf_form"):
         filename = st.text_input("📄 Dateiname der PDF", value="auswertung.pdf")
         generate = st.form_submit_button("📄 PDF erstellen")
-        if generate:
-            try:
-                pdf_bytes = generiere_auswertung_pdf(data)
-                st.success("✅ PDF erfolgreich erstellt.")
-                st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name=filename, mime="application/pdf")
-            except Exception as e:
-                st.error(f"❌ Fehler bei der PDF-Erstellung: {e}")
+    if generate:
+        try:
+            pdf_bytes = generiere_auswertung_pdf(data)
+            st.success("✅ PDF erfolgreich erstellt.")
+        except Exception as e:
+            st.error(f"❌ Fehler bei der PDF-Erstellung: {e}")
+    if pdf_bytes:
+        st.download_button("⬇️ PDF herunterladen", data=pdf_bytes, file_name=filename, mime="application/pdf")
 elif data:
     st.warning("⚠️ Kein 'responses'-Key im JSON gefunden.")
 else:
