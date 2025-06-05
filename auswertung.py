@@ -53,24 +53,42 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             if not frage_spalte:
                 continue
 
-            df[frage_spalte] = df[frage_spalte ].apply(parse_schulnote)
+            df[frage_spalte] = df[frage_spalte].apply(parse_schulnote)
             gruppiert = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
-
             if gruppiert.empty:
                 continue
 
-            plt.figure(figsize=(8, 4))
-            sns.barplot(x=gruppiert.index, y=gruppiert.values)
-            plt.title(frage_spalte.split('. ', 1)[1] if '. ' in frage_spalte else frage_spalte)
-            plt.xlabel("Altersklasse")
-            plt.ylabel("Note")
-            ax = plt.gca()
-            ax.set_ylim(0, 5.5)
-            ax.set_yticks([5, 4, 3, 2, 1, 0])
-            ax.set_yticklabels(["5", "4", "3", "2", "1", "0"])
-            plt.tight_layout()
-            pdf.savefig()
-            plt.close()
+            # Nach Präfix H und D splitten
+            gruppiert_H = gruppiert[gruppiert.index.str.startswith("H")]
+            gruppiert_D = gruppiert[gruppiert.index.str.startswith("D")]
+
+            if not gruppiert_H.empty:
+                plt.figure(figsize=(8, 4))
+                sns.barplot(x=gruppiert_H.index, y=gruppiert_H.values)
+                plt.title(f"{frage_spalte.split('. ', 1)[1] if '. ' in frage_spalte else frage_spalte} (H*)")
+                plt.xlabel("Altersklasse (H*)")
+                plt.ylabel("Note")
+                ax = plt.gca()
+                ax.set_ylim(0, 5.5)
+                ax.set_yticks([5, 4, 3, 2, 1, 0])
+                ax.set_yticklabels(["5", "4", "3", "2", "1", "0"])
+                plt.tight_layout()
+                pdf.savefig()
+                plt.close()
+
+            if not gruppiert_D.empty:
+                plt.figure(figsize=(8, 4))
+                sns.barplot(x=gruppiert_D.index, y=gruppiert_D.values)
+                plt.title(f"{frage_spalte.split('. ', 1)[1] if '. ' in frage_spalte else frage_spalte} (D*)")
+                plt.xlabel("Altersklasse (D*)")
+                plt.ylabel("Note")
+                ax = plt.gca()
+                ax.set_ylim(0, 5.5)
+                ax.set_yticks([5, 4, 3, 2, 1, 0])
+                ax.set_yticklabels(["5", "4", "3", "2", "1", "0"])
+                plt.tight_layout()
+                pdf.savefig()
+                plt.close()
 
 # ----------------------------
 # Hauptfunktion
