@@ -28,7 +28,7 @@ def normalize_string(s):
     Wandelt alle Kleinbuchstaben in Großbuchstaben um
     und entfernt Leerzeichen sowie Bindestriche.
     """
-    return s.replace(" ", "").replace("-", "").upper()
+    return s.replace(" ", "").replace("-", "").replace("\"","").upper()
 
 def remove_emojis(text):
     # Entfernt nur Emojis, nicht aber Umlaute oder andere Unicode-Zeichen
