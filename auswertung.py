@@ -1,5 +1,4 @@
-import json
-from datetime import date
+import emoji
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -24,8 +23,16 @@ def parse_schulnote(value):
     except:
         return None
 
+def normalize_string(s):
+    """
+    Wandelt alle Kleinbuchstaben in Großbuchstaben um
+    und entfernt Leerzeichen sowie Bindestriche.
+    """
+    return s.replace(" ", "").replace("-", "").upper()
+
 def remove_emojis(text):
-    return re.sub(r"[^\x00-\x7F]+", "", text)
+    # Entfernt nur Emojis, nicht aber Umlaute oder andere Unicode-Zeichen
+    return emoji.replace_emoji(text, replace='')
 
 def spalten_mit_code(df, code_liste):
     return [col for col in df.columns for code in code_liste if col.startswith(code)]
@@ -40,6 +47,7 @@ def add_titelseite(title, pdf):
 def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
     altersklasse_spalte = next((col for col in df.columns if col.startswith(altersklassen_code)), None)
     if altersklasse_spalte:
+        df[altersklasse_spalte] = df[altersklasse_spalte].astype(str).apply(normalize_string)
         for code in gruppierte_fragen:
             frage_spalte = next((col for col in df.columns if col.startswith(code)), None)
             if not frage_spalte:
@@ -151,16 +159,29 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
         if len(antworten) == 0:
             continue
 
-        fig, ax = plt.subplots(figsize=(8.27, 11.69))
-        ax.axis("off")
-        titel = frage.split('. ', 1)[1] if '. ' in frage else frage
-        text = f"{titel}\n" + "-" * 80 + "\n\n"
+        seite = []
+        zeilenzahl = 0
         for antw in antworten:
-            text += textwrap.fill(f"- {antw}", width=100) + "\n\n"
-        ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
-        pdf.savefig()
-        plt.close()
-
+            wrapped = textwrap.wrap(f"- {antw}", width=100)
+            if zeilenzahl + len(wrapped) + 2 > max_zeilen_pro_seite:
+                # Seite voll, neue Seite beginnen
+                fig, ax = plt.subplots(figsize=(8.27, 11.69))
+                ax.axis("off")
+                text = f"{titel}\n" + "-" * 80 + "\n\n" + "\n".join(seite)
+                ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
+                pdf.savefig()
+                plt.close()
+                seite = []
+                zeilenzahl = 0
+            seite.extend(wrapped + [""])
+            zeilenzahl += len(wrapped) + 1
+        if seite:
+            fig, ax = plt.subplots(figsize=(8.27, 11.69))
+            ax.axis("off")
+            text = f"{titel}\n" + "-" * 80 + "\n\n" + "\n".join(seite)
+            ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
+            pdf.savefig()
+            plt.close()
     pdf.close()
 
     with open(pdf_path, "rb") as f:
