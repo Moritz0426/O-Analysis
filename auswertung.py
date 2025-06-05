@@ -163,10 +163,11 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
         zeilenzahl = 0
         for antw in antworten:
             wrapped = textwrap.wrap(f"- {antw}", width=100)
-            if zeilenzahl + len(wrapped) + 2 > max_zeilen_pro_seite:
+            if zeilenzahl + len(wrapped) + 2 > 40:  # 40 Zeilen pro Seite
                 # Seite voll, neue Seite beginnen
                 fig, ax = plt.subplots(figsize=(8.27, 11.69))
                 ax.axis("off")
+                titel = frage.split('. ', 1)[1] if '. ' in frage else frage
                 text = f"{titel}\n" + "-" * 80 + "\n\n" + "\n".join(seite)
                 ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
                 pdf.savefig()
