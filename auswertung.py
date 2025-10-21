@@ -167,8 +167,13 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
     for frage in textfragen:
         antworten = df[frage].dropna().astype(str).str.strip()
         antworten = [remove_emojis(a) for a in antworten if a]
+
+
         if len(antworten) == 0:
             continue
+
+        # DEFINIERE DEN TITEL HIER - so existiert er immer
+        titel = frage.split('. ', 1)[1] if '. ' in frage else frage
 
         seite = []
         zeilenzahl = 0
@@ -178,7 +183,7 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
                 # Seite voll, neue Seite beginnen
                 fig, ax = plt.subplots(figsize=(8.27, 11.69))
                 ax.axis("off")
-                titel = frage.split('. ', 1)[1] if '. ' in frage else frage
+                # Die Titel-Definition von hier wurde nach oben verschoben
                 text = f"{titel}\n" + "-" * 80 + "\n\n" + "\n".join(seite)
                 ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
                 pdf.savefig()
@@ -190,6 +195,7 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
         if seite:
             fig, ax = plt.subplots(figsize=(8.27, 11.69))
             ax.axis("off")
+            # Jetzt kann hier sicher auf 'titel' zugegriffen werden
             text = f"{titel}\n" + "-" * 80 + "\n\n" + "\n".join(seite)
             ax.text(0, 1, text, ha="left", va="top", wrap=True, family="monospace")
             pdf.savefig()
