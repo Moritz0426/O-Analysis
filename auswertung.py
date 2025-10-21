@@ -4,24 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 import textwrap
-import re
 import tempfile
 
 # ----------------------------
 # Hilfsfunktionen
 # ----------------------------
-
-def parse_schulnote(value):
-    if pd.isna(value):
-        return None
-    if isinstance(value, str):
-        match = re.match(r"^\s*(\d)", value)
-        if match:
-            return int(match.group(1))
-    try:
-        return float(value)
-    except:
-        return None
 
 def normalize_string(s):
     """
@@ -53,7 +40,6 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             if not frage_spalte:
                 continue
 
-            df[frage_spalte] = df[frage_spalte].apply(parse_schulnote)
             gruppiert = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
             if gruppiert.empty:
                 continue
@@ -95,14 +81,17 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
 # ----------------------------
 
 def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
-    altersklassen_code_WK1 = "G07Q01"
-    altersklassen_code_WK2 = "G09Q01"
+    altersklassen_code_wk1 = "G07Q01"
+    altersklassen_code_wk2 = "G09Q01"
+    # Fragen die auf einer Skala von 1-5 bewertet werden
     numerische_codes = [
         "G06Q01", "G06Q02", "G06Q03", "G06Q04",
         "G08Q01", "G08Q02", "G08Q03", "G08Q04"
     ]
-    gruppierte_fragen_WK1 = ["G07Q02", "G07Q03", "G07Q04", "G07Q05"]
-    gruppierte_fragen_WK2 = ["G09Q02", "G09Q03", "G09Q04", "G09Q05"]
+    # Fragen die Wettkampfspezifisch sind
+    gruppierte_fragen_wk1 = ["G07Q02", "G07Q03", "G07Q04", "G07Q05"]
+    gruppierte_fragen_wk2 = ["G09Q02", "G09Q03", "G09Q04", "G09Q05"]
+    # Beispielsweoise JaNein-Fragen
     kategorische_codes = ["G04Q01", "G04Q02", "G04Q03", "G04Q04", "G04Q05", "G01Q01", "G05Q01", "G05Q02"]
 
     df = pd.DataFrame(data["responses"])
@@ -125,8 +114,6 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
     # Teil 1: Numerische Gesamtauswertung
     #add_titelseite("Gesamtauswertung numerischer Fragen", pdf)
     numerische_fragen = spalten_mit_code(df, numerische_codes)
-    for col in numerische_fragen:
-        df[col] = df[col].apply(parse_schulnote)
 
     mittelwerte = df[numerische_fragen].mean().sort_values()
     if not mittelwerte.empty:
@@ -146,16 +133,16 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
         pdf.savefig()
         plt.close()
 
-    # Teil 2: Gruppierte Auswertungen
-    #add_titelseite("Auswertung nach Altersklassen – WK1", pdf)
-    auswertung_pro_wettkampf(df, altersklassen_code_WK1, gruppierte_fragen_WK1, pdf)
-    #add_titelseite("Auswertung nach Altersklassen – WK2", pdf)
-    auswertung_pro_wettkampf(df, altersklassen_code_WK2, gruppierte_fragen_WK2, pdf)
+    # Teil 2: Gruppierte Auswertungen (wie gehabt)
+    auswertung_pro_wettkampf(df, altersklassen_code_wk1, gruppierte_fragen_wk1, pdf)
+    auswertung_pro_wettkampf(df, altersklassen_code_wk2, gruppierte_fragen_wk2, pdf)
 
     # Teil 3: Kategorische Fragen (mit "Keine Antwort")
     #add_titelseite("Auswertung kategorischer Fragen", pdf)
     kategorische_fragen = spalten_mit_code(df, kategorische_codes)
     for frage in kategorische_fragen:
+        if frage not in df.columns:
+            continue
         werte = df[frage].astype(str).replace("", "Keine Antwort").fillna("Keine Antwort")
         kategorien = werte.value_counts().index.tolist()
 
@@ -205,3 +192,6 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
 
     with open(pdf_path, "rb") as f:
         return f.read()
+
+def get_frage_code(frage):
+    return frage.split('. ', 1)[1]
