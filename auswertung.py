@@ -40,7 +40,10 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             if not frage_spalte:
                 continue
 
+            # Wandel die Spalte vor der Berechnung in ein numerisches Format um
+            df[frage_spalte] = pd.to_numeric(df[frage_spalte], errors='coerce')
             gruppiert = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
+
             if gruppiert.empty:
                 continue
 
@@ -114,8 +117,11 @@ def generiere_auswertung_pdf(data, pdf_path="antwortenV2"):
     # Teil 1: Numerische Gesamtauswertung
     #add_titelseite("Gesamtauswertung numerischer Fragen", pdf)
     numerische_fragen = spalten_mit_code(df, numerische_codes)
-
-    mittelwerte = df[numerische_fragen].mean().sort_values()
+    # Wandel die numerischen Spalten in Zahlen um und ignoriere Fehler
+    df_numeric = df[numerische_fragen].copy()
+    for col in df_numeric.columns:
+        df_numeric[col] = pd.to_numeric(df_numeric[col], errors='coerce')
+    mittelwerte = df_numeric.mean().sort_values()
     if not mittelwerte.empty:
         bewertung_df = pd.DataFrame({
             "Frage": [col.split('. ', 1)[1] if '. ' in col else col for col in mittelwerte.index],
