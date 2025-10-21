@@ -31,6 +31,7 @@ def add_titelseite(title, pdf):
     pdf.savefig()
     plt.close()
 
+
 def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
     altersklasse_spalte = next((col for col in df.columns if col.startswith(altersklassen_code)), None)
     if altersklasse_spalte:
@@ -40,41 +41,69 @@ def auswertung_pro_wettkampf(df, altersklassen_code, gruppierte_fragen, pdf):
             if not frage_spalte:
                 continue
 
-            # Wandel die Spalte vor der Berechnung in ein numerisches Format um
+            # Wandle die Spalte vor der Berechnung in ein numerisches Format um
             df[frage_spalte] = pd.to_numeric(df[frage_spalte], errors='coerce')
-            gruppiert = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
 
-            if gruppiert.empty:
+            # NEU: Berechne sowohl Mittelwert als auch die Anzahl der Antworten
+            gruppiert_mean = df.groupby(altersklasse_spalte)[frage_spalte].mean().dropna()
+            gruppiert_count = df.groupby(altersklasse_spalte)[frage_spalte].count().dropna()
+
+            if gruppiert_mean.empty:
                 continue
 
             # Nach Präfix H und D splitten
-            gruppiert_H = gruppiert[gruppiert.index.str.startswith("H")]
-            gruppiert_D = gruppiert[gruppiert.index.str.startswith("D")]
+            gruppiert_H = gruppiert_mean[gruppiert_mean.index.str.startswith("H")]
+            gruppiert_D = gruppiert_mean[gruppiert_mean.index.str.startswith("D")]
 
             if not gruppiert_H.empty:
                 plt.figure(figsize=(8, 4))
-                sns.barplot(x=gruppiert_H.index, y=gruppiert_H.values)
+                # sns.barplot gibt ein "Axes"-Objekt zurück, das wir für die Beschriftung brauchen
+                ax = sns.barplot(x=gruppiert_H.index, y=gruppiert_H.values)
                 plt.title(f"{frage_spalte.split('. ', 1)[1] if '. ' in frage_spalte else frage_spalte} (H*)")
                 plt.xlabel("Altersklasse (H*)")
                 plt.ylabel("Note")
-                ax = plt.gca()
                 ax.set_ylim(0, 5.5)
                 ax.set_yticks([5, 4, 3, 2, 1, 0])
                 ax.set_yticklabels(["5", "4", "3", "2", "1", "0"])
+
+                # NEU: Schleife zum Hinzufügen der Text-Labels (Anzahl der Antworten)
+                for i, bar in enumerate(ax.patches):
+                    # Finde die passende Altersklasse und deren Anzahl
+                    altersklasse = gruppiert_H.index[i]
+                    count = gruppiert_count.get(altersklasse, 0)
+                    # Positioniere den Text mittig über dem Balken
+                    ax.text(bar.get_x() + bar.get_width() / 2,
+                            bar.get_height(),
+                            f'n={count}',
+                            ha='center',
+                            va='bottom',
+                            color='black')
+
                 plt.tight_layout()
                 pdf.savefig()
                 plt.close()
 
             if not gruppiert_D.empty:
                 plt.figure(figsize=(8, 4))
-                sns.barplot(x=gruppiert_D.index, y=gruppiert_D.values)
+                ax = sns.barplot(x=gruppiert_D.index, y=gruppiert_D.values)
                 plt.title(f"{frage_spalte.split('. ', 1)[1] if '. ' in frage_spalte else frage_spalte} (D*)")
                 plt.xlabel("Altersklasse (D*)")
                 plt.ylabel("Note")
-                ax = plt.gca()
                 ax.set_ylim(0, 5.5)
                 ax.set_yticks([5, 4, 3, 2, 1, 0])
                 ax.set_yticklabels(["5", "4", "3", "2", "1", "0"])
+
+                # NEU: Schleife zum Hinzufügen der Text-Labels (Anzahl der Antworten)
+                for i, bar in enumerate(ax.patches):
+                    altersklasse = gruppiert_D.index[i]
+                    count = gruppiert_count.get(altersklasse, 0)
+                    ax.text(bar.get_x() + bar.get_width() / 2,
+                            bar.get_height(),
+                            f'n={count}',
+                            ha='center',
+                            va='bottom',
+                            color='black')
+
                 plt.tight_layout()
                 pdf.savefig()
                 plt.close()
